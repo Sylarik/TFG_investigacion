@@ -79,11 +79,24 @@ def astar_with_generated_nodes(maze, velocidad_viento, direccion_viento, start, 
         # 3. Encontrar el final
         if current_node.position == end_node.position:          # si el nodo actual es el final
             path = []
+            velocities = []
+            g = []
+            h = []
+            f = []
+            direccion = []
             current = current_node
             while current is not None:
                 path.append(current.position)
+                velocities.append(current.velocity)  # 💡 Añadimos la velocidad efectiva aquí
+                g.append(current.g)
+                h.append(current.h)
+                f.append(current.f)
+                direccion.append(current.direction)
                 current = current.parent
-            return path[::-1], expanded_nodes, generated_nodes  # Se retorna el camino invertido ([::-1]), ya que fue construido desde el final al inicio.
+            g = [round(float(x), 3) for x in g]
+            h = [round(float(x), 3) for x in h]
+            f = [round(float(x), 3) for x in f]
+            return path[::-1], expanded_nodes, generated_nodes, velocities[::-1], g[::-1], h[::-1], f[::-1], direccion[::-1] # Se retorna el camino invertido ([::-1]), ya que fue construido desde el final al inicio.
 
         # 4. Generar nodos hijos
         #valid_moves = next(moves for direction, moves in direction_vectors if direction == current_node.direction)  # Solo selecciona la tupla donde direction coincida con current_node.direction
@@ -333,13 +346,18 @@ def main():
             direccion_viento = np.full((21, 21), dv[1]) #direcciones del viento en grados (0º=E, 90º=N, 180º=W, 270º=S)
     
 
-            path, expanded_nodes, generated_nodes = astar_with_generated_nodes(maze, velocidad_viento, direccion_viento, start, end, d, start_velocity)
+            path, expanded_nodes, generated_nodes, velocities, g, h, f, direccion_barco = astar_with_generated_nodes(maze, velocidad_viento, direccion_viento, start, end, d, start_velocity)
 
             if path is None:
                 print("No se encontró un camino válido desde el inicio hasta el objetivo.")
                 return
 
             print("Path:", path)
+            print("Velocities:", velocities)
+            print("g:", g)
+            print("h:", h)
+            print("f:", f)
+            print("Dirección del barco:", direccion_barco)
             print("Expanded Nodes:", expanded_nodes)
             print(f"Total Expanded Nodes: {len(expanded_nodes)}")
 
@@ -358,16 +376,20 @@ def main():
             # añadir un indice
             # Construcción del diccionario de resultados
             resultados = {
-                "Index": [i+j],
+                "Index": [j],
                 "Boat Direction": [d],
                 "Wind Direction": [dv[0]], #direcciones del viento en grados (0º=E, 90º=N, 180º=W, 270º=S)
-                "Total Expanded Nodes": [len(expanded_nodes)],
-                "Generated Nodes": [str(generated_nodes)],
-                "Path Length": [len(path)],
                 "Tiempo de ejecución (s)": [round(ended - started, 6)],
+                "Path Length": [len(path)],
                 "Path": [str(path)],
+                "Total Expanded Nodes": [len(expanded_nodes)],
                 "Expanded Nodes": [str(expanded_nodes)],
-                "Total Generated Nodes": [len(generated_nodes)]
+                "Total Generated Nodes": [len(generated_nodes)],
+                "Generated Nodes": [str(generated_nodes)],
+                "g": [str(g)],
+                "h": [str(h)],
+                "f": [str(f)],
+                "boat direction": [str(direccion_barco)]
             }
 
             # Convertimos a DataFrame
@@ -378,7 +400,7 @@ def main():
             os.makedirs(carpeta, exist_ok=True)
 
             # Nombre del archivo con ruta
-            nombre_archivo = os.path.join(carpeta, "resultados_busqueda2.xlsx")
+            nombre_archivo = os.path.join(carpeta, "resultados_busqueda4.xlsx")
 
             try:
                 # Intentamos agregar a un archivo existente si ya hay uno

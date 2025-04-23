@@ -54,4 +54,7 @@ con_viento.py
     - lo voy a probar con lo del paper.
 
 generador_multiple_datos.py
-    - se añade un buble con distintos valores para los datos
+    - se añade (a con_viento.py) un bucle con distintos valores para los datos
+
+holgura.py 
+    - funcion de holgura

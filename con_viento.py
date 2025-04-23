@@ -4,6 +4,8 @@ import time
 import pandas as pd
 import os
 
+from holgura import agregar_holgura
+
 class Node:
     """A node class for A* Pathfinding"""
 
@@ -82,12 +84,23 @@ def astar_with_generated_nodes(maze, velocidad_viento, direccion_viento, start, 
         if current_node.position == end_node.position:          # si el nodo actual es el final
             path = []
             velocities = []
+            g = []
+            h = []
+            f = []
+            direccion = []
             current = current_node
             while current is not None:
                 path.append(current.position)
                 velocities.append(current.velocity)  # 💡 Añadimos la velocidad efectiva aquí
+                g.append(current.g)
+                h.append(current.h)
+                f.append(current.f)
+                direccion.append(current.direction)
                 current = current.parent
-            return path[::-1], expanded_nodes, generated_nodes, velocities[::-1]  # Se retorna el camino invertido ([::-1]), ya que fue construido desde el final al inicio.
+            g = [round(float(x), 3) for x in g]
+            h = [round(float(x), 3) for x in h]
+            f = [round(float(x), 3) for x in f]
+            return path[::-1], expanded_nodes, generated_nodes, velocities[::-1], g[::-1], h[::-1], f[::-1], direccion[::-1] # Se retorna el camino invertido ([::-1]), ya que fue construido desde el final al inicio.
 
         # 4. Generar nodos hijos
         #valid_moves = next(moves for direction, moves in direction_vectors if direction == current_node.direction)  # Solo selecciona la tupla donde direction coincida con current_node.direction
@@ -278,6 +291,8 @@ def visualize_maze_with_generated(maze, path, expanded_nodes, generated_nodes):
         for j in range(len(maze[0])):
             if maze[i][j] == 1:  # Pared -> Negro
                 visual_maze[i, j] = [0, 0, 0]
+            elif maze[i][j] == 2:  # Camino -> Gris
+                visual_maze[i, j] = [0.5, 0.5, 0.5]
             else:  # Espacio -> Blanco
                 visual_maze[i, j] = [1, 1, 1]
 
@@ -360,35 +375,37 @@ def main():
 
     # Primera prueba es al N=0º, pero como la matriz es de donde viene el viento, es al reves y despues se le suma 180º
     direccion_viento = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+        [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180]
     ]
 
     start = (19,1)
     end = (1,19)
-    start_direction = 'E' #'S'
+    start_direction = 'N' #'S'
     start_velocity = 10 # m/s????
 
-    path, expanded_nodes, generated_nodes, velocities = astar_with_generated_nodes(maze, velocidad_viento, direccion_viento, start, end, start_direction, start_velocity)
+    maze_holgura = agregar_holgura(maze)
+
+    path, expanded_nodes, generated_nodes, velocities, g, h, f, direccion_barco = astar_with_generated_nodes(maze_holgura, velocidad_viento, direccion_viento, start, end, start_direction, start_velocity)
 
     if path is None:
         print("No se encontró un camino válido desde el inicio hasta el objetivo.")
@@ -396,6 +413,10 @@ def main():
 
     print("Path:", path)
     print("Velocities:", velocities)
+    print("g:", g)
+    print("h:", h)
+    print("f:", f)
+    print("Dirección del barco:", direccion_barco)
     print("Expanded Nodes:", expanded_nodes)
     print(f"Total Expanded Nodes: {len(expanded_nodes)}")
 
@@ -447,7 +468,7 @@ def main():
     print("✅ Resultados guardados en Excel.")
 
     # Visualizar el laberinto con la solución, nodos expandidos y generados
-    visualize_maze_with_generated(maze, path, expanded_nodes, generated_nodes)
+    visualize_maze_with_generated(maze_holgura, path, expanded_nodes, generated_nodes)
 
 
 if __name__ == '__main__':
