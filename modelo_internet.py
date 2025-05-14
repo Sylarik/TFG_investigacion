@@ -87,6 +87,7 @@ def astar(maze, start, end):
             child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
             child.f = child.g + child.h
 
+#---ESTO ES LO QUE NO ENTIENDO-----------------------------------------------------------------------------------------------------------------
             # Child is already in the open list
             for open_node in open_list:
                 if child == open_node and child.g > open_node.g:
@@ -94,6 +95,10 @@ def astar(maze, start, end):
 
             # Add the child to the open list
             open_list.append(child)
+            with open('output2.txt', 'a') as file:  # 'a' para agregar al archivo sin sobrescribir
+                for opem_node in open_list:
+                    file.write(f"{opem_node.position}\n")  # Escribe cada posición en una nueva línea
+#-----------------------------------------------------------------------------------------------------------------------------------------
 
 
 def main():
