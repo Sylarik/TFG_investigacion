@@ -1,4 +1,5 @@
 
+todas las cooordenadas en el codigo estan como (Y,X) no (x,y)
 
 ruta
 
@@ -93,3 +94,13 @@ PROBLEMAS:
         output4.txt -> el mio con lo de que se elimine el nodo si hay uno con menor g -> no hace nada
         output5.txt -> el 4 pero con otro mapa
         output6. txt -> el 3 pero con otro mapa -> es igual que el 5 -> no hace nada lo de elinar el nodo?
+
+
+    5. Distancia euclidiana o la de manhatan??
+        sol: mejor la euclidiana porque tiene en cuenta las diagonales (añadir foto google)
+
+        path: [(2, 1), (3, 2), (4, 2), (5, 2), (6, 3), (7, 4), (8, 5), (8, 6), (8, 7), (8, 8), (8, 9), (9, 10), (10, 11), (11, 12), (12, 13), (12, 14)]
+        con manhatan: Heuristics: [0, 21, 20, 19, 17, 15, 13, 12, 11, 10, 9, 7, 5, 3, 1, 0]
+        con euclidiana: Heuristics: [0, 15.0, 14.422205101855956, 13.892443989449804, 12.529964086141668, 11.180339887498949, 9.848857801796104, 8.94427190999916, 8.06225774829855, 7.211102550927978, 6.4031242374328485, 5.0, 3.605551275463989, 2.23606797749979, 1.0, 0.0]
+
+        -> el path en los dos cosas

@@ -1,3 +1,4 @@
+import math
 import time
 
 
@@ -53,19 +54,19 @@ def a_star_pathfinding(maze, start, end):
             return path[::-1] #devulve el camino en orden inverso
 
         # Generamos vecinos
-        for dx, dy in MOVEMENTS:
+        for new_position in MOVEMENTS:
 
-            new_position = (current_node.position[0] + dx, current_node.position[1] + dy)
+            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Validar límites
-            if not (0 <= new_position[0] < len(maze)) or not (0 <= new_position[1] < len(maze[0])):
+            if not (0 <= node_position[0] < len(maze)) or not (0 <= node_position[1] < len(maze[0])):
                 continue
 
             # Si es obstáculo, lo saltamos
-            if maze[new_position[0]][new_position[1]] != 0:
+            if maze[node_position[0]][node_position[1]] != 0:
                 continue
 
-            new_node = Node(current_node, new_position)
+            new_node = Node(current_node, node_position)
 
             if new_node in closed_list:
                 continue
@@ -74,19 +75,22 @@ def a_star_pathfinding(maze, start, end):
             new_node.g = current_node.g + 1
             dx = abs(new_node.position[0] - end_node.position[0])
             dy = abs(new_node.position[1] - end_node.position[1])
-            new_node.h = dx + dy  # Distancia Manhattan
+            new_node.h = math.sqrt(dx**2 + dy**2)  # Euclidiana
             new_node.f = new_node.g + new_node.h
 
 #-------------------------------------------------------------------------------------------------------------------------------
 
             # Comprobar si el vecino ya está en open_list con un mejor g
             for existing_node in open_list:
-                if new_node == existing_node and new_node.g >= existing_node.g:
+                if new_node == existing_node:
+                    if new_node.g < existing_node.g:
+                        open_list.remove(existing_node)  # Quitamos el peor
+                        open_list.append(new_node)      # Añadimos el mejor
                     break
             else:
                 open_list.append(new_node)  # No había ninguno igual, lo añadimos
 
-                with open('output6.txt', 'a') as file:  # 'a' para agregar al archivo sin sobrescribir
+                with open('output5.txt', 'a') as file:  # 'a' para agregar al archivo sin sobrescribir
                     for opem_node in open_list:
                         file.write(f"{opem_node.position}\n")
             #si pongo esto chatgpt me dice que esta mal:

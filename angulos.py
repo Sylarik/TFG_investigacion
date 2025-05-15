@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -18,7 +19,7 @@ class Node:
     def __eq__(self, other):
         return self.position == other.position #Se compara si dos nodos tienen la misma posición en el laberinto.
 
-def astar_with_generated_nodes(maze, start, end, start_direction):
+def a_star_pathfinding(maze, start, end, start_direction):
     """Returns path, expanded_nodes, and generated_nodes for A* Pathfinding"""
 
     # Define allowed directions as a list of tuples
@@ -45,10 +46,8 @@ def astar_with_generated_nodes(maze, start, end, start_direction):
     ]
 
     # Create start and end nodes
-    start_node = Node(None, start, start_direction)     #nodo de inicio en una posicion con una direccion
-    start_node.g = start_node.h = start_node.f = 0      #Inicialización de costos en start_node
+    start_node = Node(None, start, start_direction)     #nodo de inicio en una posicion con una direccion 
     end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
 
     # Initialize both open and closed list
     open_list = [start_node]    # Contiene nodos en espera de evaluación
@@ -57,28 +56,26 @@ def astar_with_generated_nodes(maze, start, end, start_direction):
     generated_nodes = []        # Nodos generados pero no necesariamente expandidos
 
     # Loop until you find the end
-    while len(open_list) > 0:                                       # Mientras 'open_list' tenga valores
+    while open_list:                                       # Mientras 'open_list' tenga valores
 
         # 1. Cogemos el nodo que menor coste tenga de los nodos a evaluar y se convierte en el 'nodo actual'
         current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):                    # genera pares (índice, nodo) mientras se itera sobre open_list -> index almacena la posición en la lista, item almacena el nodo en esa posición
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
+        for node in open_list:
+            if node.f < current_node.f:
+                current_node = node
 
         # 2. Mover el nodo actual de open_list a closed_list
-        open_list.pop(current_index)
+        open_list.remove(current_node)
         closed_list.append(current_node)
         expanded_nodes.append(current_node.position)  # Mark as expanded
 
         # 3. Encontrar el final
-        if current_node.position == end_node.position:          # si el nodo actual es el final
+        if current_node == end_node:          # si el nodo actual es el final
             path = []
-            current = current_node
-            while current is not None:
-                path.append(current.position)
-                current = current.parent
+            temp = current_node
+            while temp:
+                path.append(temp.position)
+                temp = temp.parent
             return path[::-1], expanded_nodes, generated_nodes  # Se retorna el camino invertido ([::-1]), ya que fue construido desde el final al inicio.
 
         # 4. Generar nodos hijos
@@ -99,8 +96,8 @@ def astar_with_generated_nodes(maze, start, end, start_direction):
                 current_node.position[1] + new_position[1]
             )
 
-            # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) - 1) or node_position[1] < 0:
+            # Validar límites
+            if not (0 <= node_position[0] < len(maze)) or not (0 <= node_position[1] < len(maze[0])):
                 continue
 
             # Make sure walkable terrain
@@ -129,22 +126,20 @@ def astar_with_generated_nodes(maze, start, end, start_direction):
                 continue                            #el operador 'in' recorre la lista closed_list y compara cada elemento con new_node
 
             # Create the f, g, and h values
-            new_node.g = current_node.g + 1                             #Costo desde el inicio hasta este nodo (+1 respecto al padre).
-            new_node.h = (
-                (new_node.position[0] - end_node.position[0]) ** 2 +    #Heurística: distancia euclidiana cuadrada al objetivo.
-                (new_node.position[1] - end_node.position[1]) ** 2
-            )
+            new_node.g = current_node.g + 1
+            dx = abs(new_node.position[0] - end_node.position[0])
+            dy = abs(new_node.position[1] - end_node.position[1])
+            new_node.h = math.sqrt(dx**2 + dy**2)  # Euclidiana
             new_node.f = new_node.g + new_node.h
 
-            # Child is already in the open list with a lower cost
-            if any(
-                open_node for open_node in open_list
-                if new_node == open_node and new_node.g > open_node.g
-            ):
-                continue
-
-            # Add the child to the open list
-            open_list.append(new_node)
+            for existing_node in open_list:
+                if new_node == existing_node:
+                    if new_node.g < existing_node.g:
+                        open_list.remove(existing_node)
+                        open_list.append(new_node)
+                    break
+            else:
+                open_list.append(new_node)
 
             # Add to generated nodes if not already added
             if new_node.position not in generated_nodes:
@@ -240,7 +235,7 @@ def main():
     end = (12, 14) #(426, 862)#(1,19)
     start_direction = 'NW' #'S'
 
-    path, expanded_nodes, generated_nodes = astar_with_generated_nodes(maze, start, end, start_direction)
+    path, expanded_nodes, generated_nodes = a_star_pathfinding(maze, start, end, start_direction)
 
     if path is None:
         print("No se encontró un camino válido desde el inicio hasta el objetivo.")

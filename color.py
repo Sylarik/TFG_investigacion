@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -52,11 +53,13 @@ def astar(maze, start, end):
         # Found the goal
         if current_node == end_node:
             path = []
+            h = []
             current = current_node
             while current is not None:
                 path.append(current.position)
+                h.append(current.h)
                 current = current.parent
-            return path[::-1], expanded_nodes  # Return reversed path and all expanded nodes
+            return path[::-1], expanded_nodes, h[::-1]  # Return reversed path and all expanded nodes
 
         # Generate children
         children = []
@@ -82,7 +85,11 @@ def astar(maze, start, end):
 
             # Create the f, g, and h values
             new_node.g = current_node.g + 1
-            new_node.h = ((new_node.position[0] - end_node.position[0]) ** 2) + ((new_node.position[1] - end_node.position[1]) ** 2)
+            #new_node.h = ((new_node.position[0] - end_node.position[0]) ** 2) + ((new_node.position[1] - end_node.position[1]) ** 2)
+            dx = abs(new_node.position[0] - end_node.position[0])
+            dy = abs(new_node.position[1] - end_node.position[1])
+            new_node.h = dx + dy  # Manhattan
+            #new_node.h = math.sqrt(dx**2 + dy**2)
             new_node.f = new_node.g + new_node.h
 
             # Child is already in the open list with a lower cost
@@ -93,7 +100,7 @@ def astar(maze, start, end):
             open_list.append(new_node)
             expanded_nodes.append(new_node.position)  # Add to expanded nodes
 
-    return None, expanded_nodes  # If no path is found, return the expanded nodes
+    return None, expanded_nodes   # If no path is found, return the expanded nodes
 
 
 def visualize_maze(maze, path, expanded_nodes):
@@ -174,15 +181,16 @@ def main():
     start = (2, 1)
     end = (12, 14)
 
-    path, expanded_nodes = astar(maze, start, end)
+    path, expanded_nodes, h = astar(maze, start, end)
     print("Path:", path)
     print("Expanded Nodes:", expanded_nodes)
+    print("Heuristics:", h)
 
     # Visualizar el laberinto con la solución y nodos expandidos
     visualize_maze(maze, path, expanded_nodes)
 
     # Guardar la figura como archivo
-    save_maze_figure(maze, path, expanded_nodes, "maze_solution.png")
+    #save_maze_figure(maze, path, expanded_nodes, "maze_solution.png")
 
 
 if __name__ == '__main__':
